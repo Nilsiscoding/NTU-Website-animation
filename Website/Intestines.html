@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title> Intestines</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+		*{
+		margin:0;
+		padding: 0;
+		box-sizing: border-box;
+		}
+		video
+		{
+				
+		position: fixed;	
+			z-index: -100;	
+			width:100%;
+			min-height: 100vh;
+			grid-template-columns: fit-content(250px) fit-content(250px) auto;
+	
+			 
+		}
+		.centerButton
+		{
+			display: flex;
+			position: relative;
+			justify-content: center;
+			align-items: center;
+			width: 100%;
+			height: 100vh;
+		}
+		.rightButtonStack {
+			position: fixed;
+			right: 5%;
+			bottom: 5%;
+
+			display: flex;
+			flex-direction: column;
+			align-items: flex-end;
+			gap: 15px;
+
+			z-index: 10;
+		}
+
+.continueButtonLocation,
+.continueButtonLocation1,
+.backButtonLocation,
+.playNextButton,
+.playAgainButton,
+.playLastButton,
+.playFromStartButton {
+    display: none;
+}
+
+.rightButtonStack button {
+    width: 180px;
+    height: 65px;
+    font-size: 20px;
+    cursor: pointer;
+}
+.centerButton button {
+    width: 250px;
+    height: 100px;
+    font-size: 24px;
+    cursor: pointer;
+}
+		#showButton {
+            display: none;
+        }
+		 #toggleUI {
+            display: flex;
+        }
+		#dropdownUI {
+            display: none;
+			height: auto;
+    		margin-top: 20px;
+        }
+		 #startUI {
+            display: flex;
+        }
+		#dropdownContainer {
+    display: none;
+    margin-top: 20px;
+}
+		.dropdown {
+		position: relative;
+		display: inline-block;
+		}
+		.dropdown-content {
+		display: none;
+		position: absolute;
+		background-color: #f1f1f1;
+		min-width: 160px;
+		box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+		z-index: 1;
+		}
+		.dropdown-content p {
+		color: black;
+		padding: 12px 16px;
+		text-decoration: none;
+		display: block;
+		}
+		
+.dropdown-content p:hover {background-color: #ddd;}
+
+.dropdown:hover .dropdown-content {display: block;}
+
+	</style>
+</head>
+
+
+<body>
+	
+	<div id="youtube-frame"></div>
+		<div class="buttonSize">
+			<div class="centerButton" id="startUI">
+			<button  onclick="playVideo(0)" >Play Video</button>
+			</div>
+		</div>
+				<div class="rightButtonStack">
+						<div class="continueButtonLocation" id="showButton">
+							
+							<button onclick="continueVideo()">Continue</button> 
+							
+						</div>
+						
+						<div class="playNextButton" id="continueNextButton">
+							
+							<button onclick="playVideo(currentVideo+1)">Play Next</button> 
+							
+						</div>
+						<div class="playLastButton" id="continueLastButton">
+							
+							<button onclick="playVideo(currentVideo-1)">Play Last</button> 
+							
+						</div>
+						<div class="playFromStartButton" id="fromStartButton">
+							
+							<button onclick="playAgain()">Play from Start</button> 
+							
+						</div>
+				<div class="backButtonLocation" id="nextButton">
+					<button onclick="nextButton()"> Back </button>
+				</div>
+				<div class="playAgainButton" id="againButton">
+					<button onclick="againButton()"> Again </button>
+				</div>
+			</div>
+
+	<!---	<div id="dropdownContainer">
+		<div class="dropdown" id="dropdownUI1">
+			<button >Dropdown</button>
+			<div class="dropdown-content">
+			<p> TEST TEST
+				kkdsakljdask
+				aklsndlakns
+			</p>
+	  </div>
+	</div>
+	<div class="dropdown" id="dropdownUI2">
+			<button >Dropdown</button>
+			<div class="dropdown-content">
+			<p> TEST TEST
+				kkdsakljdask
+				aklsndlakns
+			</p>
+	  </div>
+	</div>
+	</div>-->
+
+</body>
+<script>
+	const videos = [
+    {
+        title: "Intestines,_Mesentery,_Peritoneum_1_",
+        src: "Videos/Intestines,_Mesentery,_Peritoneum_1_.mp4",
+        pausePoints: [0.3, ]
+    },
+	{
+		title: "Intestines,_Mesentery,_Peritoneum_2(cutout_)",
+		src: "Videos/Intestines,_Mesentery,_Peritoneum_2(cutout_).mp4",
+		pausePoints: []
+	},
+	{
+		title: "Intestines,_Mesentery,_Peritoneum_3(cutout_)",
+		src: "Videos/Intestines,_Mesentery,_Peritoneum_3(cutout_).mp4",
+		pausePoints: [0.2, 4]
+	},
+	
+];	
+var vTag;
+	var isShowing = 0;
+	var isPause = 0;
+	var currentVideo = 0;
+	const totalVideo = 2;
+	var pausePoints = [];
+	/*var dropdownGroups = [
+    ["dropdownUI1", "dropdownUI2"]
+];*/
+	var currentStop = -1;
+	var triggeredPoints = [];
+function playVideo(index) {
+
+    currentVideo = index;
+    triggeredPoints = [];
+    currentStop = -1;
+    isPause = 0;
+
+    // Reset buttons
+    document.getElementById("showButton").style.display = "none";
+    document.getElementById("continueNextButton").style.display = "none";
+    document.getElementById("continueLastButton").style.display = "none";
+    document.getElementById("againButton").style.display = "none";
+
+    // Hide start button
+    document.getElementById("startUI").style.display = "none";
+
+    // Load video
+    const frame = document.getElementById("youtube-frame");
+
+    frame.innerHTML = `
+        <video id="video" width="560" height="315" autoplay>
+            <source src="${videos[index].src}" type="video/mp4">
+            Your browser does not support HTML5 video.
+        </video>
+    `;
+
+    vTag = document.getElementById("video");
+
+    vTag.play();
+
+    // Pause at specified timestamps
+    vTag.ontimeupdate = function() {
+
+        let cTime = vTag.currentTime;
+
+        for (let i = 0; i < videos[index].pausePoints.length; i++) {
+
+            let point = videos[index].pausePoints[i];
+
+            if (cTime >= point && !triggeredPoints.includes(i)) {
+
+                vTag.pause();
+
+                isPause = 1;
+                currentStop = i;
+
+                triggeredPoints.push(i);
+
+                toggleButton();
+
+                break;
+            }
+        }
+    };
+
+    vTag.onended = function() {
+        finishedVideo();
+    };
+}
+function toggleButton()
+  {
+  const show = document.getElementById('showButton');
+   var container = document.getElementById('dropdownContainer');
+  show.style.display ="none";
+  //container.style.display ="none";
+  document.querySelectorAll('.dropdown').forEach(function(dropdown) {
+        dropdown.style.display = "none";
+    });
+  if (isPause == 1)
+  {
+	  //container.style.display = "block";
+	  document.getElementById('showButton').style.display = "flex";
+	  console.log("showing");
+	 /*dropdownGroups[currentStop].forEach(function(id) {
+
+        //document.getElementById(id).style.display = "flex";
+
+    })*/;
+  }
+}
+
+
+	
+	function continueVideo()
+	{
+		const show = document.getElementById('showButton');
+		if(isPause == 1)
+		{
+			vTag.play()
+			console.log("hiding");
+			isPause = 0;
+			show.style.display = "none"; 
+			//document.getElementById('dropdownContainer').style.display = "none";
+		}
+	}
+	function finishedVideo()
+	{
+		document.getElementById("againButton").style.display = "flex";
+
+    if (currentVideo < videos.length - 1) {
+        document.getElementById("continueNextButton").style.display = "flex";
+    }
+
+    if (currentVideo > 0) {
+        document.getElementById("continueLastButton").style.display = "flex";
+    }
+
+    if (currentVideo === videos.length - 1) {
+        document.getElementById("nextButton").style.display = "flex";
+        document.getElementById("fromStartButton").style.display = "flex";
+
+    }
+}
+function nextButton()
+{
+	const next = document.getElementById('nextButton');
+	window.location.href = "file:///D:/NTU%20Intern%202d%20animation%20part%202/Website/Main%20page.html";
+	
+}function againButton()
+{
+	const next = document.getElementById('againButton');
+	 vTag.currentTime = 0;
+	document.getElementById('showButton').style.display ="none";
+	isPause = 0;
+	triggeredPoints = [];
+	document.getElementById("againButton").style.display = "none";
+	vTag.play();	
+}
+function updateVideo()
+{
+	currentVideo ++;
+}
+function nextVideo() {
+
+    if (currentVideo < videos.length - 1) {
+        playVideo(currentVideo + 1);
+    }
+}
+
+function prevVideo() {
+
+    if (currentVideo > 0) {
+        playVideo(currentVideo - 1);
+    }
+}
+function playAgain()
+{
+	playVideo(0)
+	currentVideo =0;
+	isPause = 0;
+	document.getElementById("fromStartButton").style.display = "none";
+
+}
+
+function againButton() {
+
+    playVideo(currentVideo);
+}
+</script>	
+
+	</html>
+	

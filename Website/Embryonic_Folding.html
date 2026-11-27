@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title> Embryonic Folding</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+		*{
+		margin:0;
+		padding: 0;
+		box-sizing: border-box;
+		}
+		video
+		{
+				
+		position: fixed;	
+			z-index: -100;	
+			width:100%;
+			min-height: 100vh;
+			grid-template-columns: fit-content(250px) fit-content(250px) auto;
+	
+			 
+		}
+		.centerButton
+		{
+			display: flex;
+			position: relative;
+			justify-content: center;
+			align-items: center;
+			width: 100%;
+			height: 100vh;
+		}
+		.rightButtonStack {
+			position: fixed;
+			right: 5%;
+			bottom: 5%;
+
+			display: flex;
+			flex-direction: column;
+			align-items: flex-end;
+			gap: 15px;
+
+			z-index: 10;
+		}
+
+.continueButtonLocation,
+.backButtonLocation,
+.playAgainButton {
+    display: none;
+}
+
+.rightButtonStack button {
+    width: 180px;
+    height: 65px;
+    font-size: 20px;
+    cursor: pointer;
+}
+.centerButton button {
+    width: 250px;
+    height: 100px;
+    font-size: 24px;
+    cursor: pointer;
+}
+		#showButton {
+            display: none;
+        }
+		 #toggleUI {
+            display: flex;
+        }
+		#dropdownUI {
+            display: none;
+			height: auto;
+    		margin-top: 20px;
+        }
+		 #startUI {
+            display: flex;
+        }
+		#dropdownContainer {
+    display: none;
+    margin-top: 20px;
+}
+		.dropdown {
+		position: relative;
+		display: inline-block;
+		}
+		.dropdown-content {
+		display: none;
+		position: absolute;
+		background-color: #f1f1f1;
+		min-width: 160px;
+		box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+		z-index: 1;
+		}
+		.dropdown-content p {
+		color: black;
+		padding: 12px 16px;
+		text-decoration: none;
+		display: block;
+		}
+		
+.dropdown-content p:hover {background-color: #ddd;}
+
+.dropdown:hover .dropdown-content {display: block;}
+
+	</style>
+</head>
+
+
+<body>
+	
+	<div id="youtube-frame"></div>
+		<div class="buttonSize">
+			<div class="centerButton" id="startUI">
+			<button  onclick="play1()" >Play Video</button>
+			</div>
+		</div>
+				<div class="rightButtonStack">
+						<div class="continueButtonLocation" id="showButton">
+							
+							<button onclick="continueVideo()">Continue</button> 
+							
+						</div>
+				<div class="backButtonLocation" id="nextButton">
+					<button onclick="nextButton()"> Back </button>
+				</div>
+				<div class="playAgainButton" id="againButton">
+					<button onclick="againButton()"> Again </button>
+				</div>
+			</div>
+
+	<!---	<div id="dropdownContainer">
+		<div class="dropdown" id="dropdownUI1">
+			<button >Dropdown</button>
+			<div class="dropdown-content">
+			<p> TEST TEST
+				kkdsakljdask
+				aklsndlakns
+			</p>
+	  </div>
+	</div>
+	<div class="dropdown" id="dropdownUI2">
+			<button >Dropdown</button>
+			<div class="dropdown-content">
+			<p> TEST TEST
+				kkdsakljdask
+				aklsndlakns
+			</p>
+	  </div>
+	</div>
+	</div>-->
+
+</body>
+<script>
+	var vTag;
+	var isShowing = 0;
+	var isPause = 0;
+	var pausePoints = [0.65,2,3.4];
+	var dropdownGroups = [
+    ["dropdownUI1", "dropdownUI2"]
+];
+	var currentStop = -1;
+	var triggeredPoints = [];
+function play1() { 
+    var frame = document.getElementById("youtube-frame");
+     frame.innerHTML = `
+        <video id="video" width="560" height="315" autoplay>
+            <source src="Videos/Embryonic_Folding.mp4" type="video/mp4">
+            Your browser does not support HTML5 video.
+        </video>
+		
+    `;	
+ document.getElementById("startUI").style.display = "none";
+//document.getElementById("dropdownUI").style.display = "none";
+
+
+vTag = document.getElementById('video');
+vTag.play();
+
+
+vTag.ontimeupdate = function () {
+        var cTime = vTag.currentTime;
+
+        pausePoints.forEach(function (point, index) {
+
+            if (
+                cTime >= point &&
+                !triggeredPoints.includes(index)
+            ) {
+                vTag.pause();
+                isPause = 1;
+				currentStop = index;
+                triggeredPoints.push(index);
+				console.log(triggeredPoints+" "+currentStop);
+
+                toggleButton();
+            }
+        });
+		
+	}
+	vTag.onended = function() {
+			finishedVideo();
+		};
+}
+function toggleButton()
+  {
+  const show = document.getElementById('showButton');
+   var container = document.getElementById('dropdownContainer');
+  show.style.display ="none";
+  //container.style.display ="none";
+  document.querySelectorAll('.dropdown').forEach(function(dropdown) {
+        dropdown.style.display = "none";
+    });
+  if (isPause == 1)
+  {
+	  //container.style.display = "block";
+	  document.getElementById('showButton').style.display = "flex";
+	  console.log("showing");
+	 /*dropdownGroups[currentStop].forEach(function(id) {
+
+        //document.getElementById(id).style.display = "flex";
+
+    })*/;
+  }
+}
+function continueVideo()
+{
+	const show = document.getElementById('showButton');
+   if(isPause == 1)
+{
+   vTag.play()
+   console.log("hiding");
+   isPause = 0;
+	show.style.display = "none"; 
+	 //document.getElementById('dropdownContainer').style.display = "none";
+}
+}
+function finishedVideo()
+{
+		document.getElementById("nextButton").style.display = "flex";
+		document.getElementById("againButton").style.display = "flex";
+}
+function nextButton()
+{
+	const next = document.getElementById('nextButton');
+	window.location.href = "file:///D:/NTU%20Intern%202d%20animation%20part%202/Website/Main%20page.html";
+	
+}function againButton()
+{
+	const next = document.getElementById('againButton');
+	 vTag.currentTime = 0;
+	document.getElementById('showButton').style.display ="none";
+	isPause = 0;
+	triggeredPoints = [];
+	document.getElementById("againButton").style.display = "none";
+	vTag.play();	
+	
+	
+}
+</script>	
+
+	</html>
+	
